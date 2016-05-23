@@ -1,0 +1,160 @@
+FINISH
+/CLEAR, NOSTART
+C***  Using Superelement
+!!
+!!***GEN PASS***
+!!
+/FILENAME,GEN
+/PREP7
+/TITLE,S.E. GEN PASS
+
+height=10
+width=50
+
+K,1,0,0
+K,2,width/2,0
+K,3,width/2,height
+K,4,0,height
+
+L,1,2
+L,2,3
+L,3,4
+L,4,1
+AL,1,2,3,4
+
+ET,1,PLANE42
+
+MP,EX,1,2E5
+MP,PRXY,1,0.3
+
+TYPE,1
+MAT,1
+
+SMRTSIZE,OFF
+ESIZE,1
+AMESH,1
+
+/SOLU
+ANTYPE,SUBSTR
+SEOPT,GEN,1
+!1 - Generate stiffness (or conductivity) matrix (default).
+!2 - Generate stiffness and mass (or conductivity and specific heat) matrices.
+!3 - Generate stiffness, mass and damping matrices.
+!ALLSEL,ALL
+!NSEL,S,LOC,X,0
+!M,ALL,ALL!定义主自由度，在使用部分施加D和F的节点都需要定义
+!（此处在生成阶段施加边界条件，不需要定义主自由度）
+
+NSEL,ALL
+NSEL,S,LOC,X,0
+D,ALL,ALL!施加超单元部分上的边界条件
+
+ALLSEL,ALL
+NSEL,S,LOC,X,width/2
+M,ALL,ALL!定义主自由度，超单元与非超单元相接触或连结的节点需要定义主自由度
+
+ALLSEL,ALL
+SOLVE
+SAVE,GEN,DB! Save database for expansion pass
+
+PARSAV,SCALAR,GEN,PARM
+FINISH
+/CLEAR,NOSTART
+!!
+!!***USE PASS***
+!!
+/FILENAME,USE
+PARRES,NEW,GEN,PARM
+/PREP7
+/TITLE,S.E. USE PASS
+
+MP,EX,1,2E5
+MP,PRXY,1,0.3
+
+ET,2,MATRIX50
+ET,3,PLANE42
+
+TYPE,2
+SE,GEN
+
+K,1,width/2,0
+K,2,width,0
+K,3,width,height
+K,4,width/2,height
+L,1,2
+L,2,3
+L,3,4
+L,4,1
+AL,ALL
+
+TYPE,3
+MAT,1
+
+ESIZE,1
+AMESH,1
+
+NSEL,S,LOC,X,width/2
+CPINTF,ALL,0.01
+
+NSEL,ALL
+NSEL,S,LOC,X,width
+F,ALL,FY,-10
+
+NSEL,ALL
+
+FINISH
+/SOLU
+SAVE,USE,DB ! Save analysis results.
+SOLVE
+FINISH
+/POST1
+!将背景颜色变成白色
+/RGB,INDEX,100,100,100, 0
+/RGB,INDEX, 80, 80, 80,13
+/RGB,INDEX, 60, 60, 60,14
+/RGB,INDEX,  0,  0,  0,15
+
+pic_resolution=800
+! 非超单元部分的von Mises等效应力
+ESEL,S,TYPE,,3
+NSLE,S,ALL
+/SHOW,JPEG
+/GFILE,pic_resolution,
+PLNSOL,S,EQV
+/SHOW,CLOSE
+
+ALLSEL,ALL
+FINISH
+/CLEAR,NOSTART
+!!
+!!***EXPANSION PASS***
+!!
+/FILENAME,GEN
+RESUME,GEN,DB
+/PREP7
+
+/TITLE,S.E. EXPANSION PASS
+/SOLU
+ANTYPE,SUBSTR
+EXPASS,ON,YES
+SEEXP,GEN,USE
+EXPSOL,1,1!扩展第一个载荷步、第一个子步的结果
+SOLVE
+FINISH
+
+/POST1
+!将背景颜色变成白色
+/RGB,INDEX,100,100,100, 0
+/RGB,INDEX, 80, 80, 80,13
+/RGB,INDEX, 60, 60, 60,14
+/RGB,INDEX,  0,  0,  0,15
+
+/DEVICE,VECTOR,OFF !When vector mode is off, entities are shown filled with color.
+/CLABEL, 1, 0 !Label contours with legend or color 
+pic_resolution=800
+! 超单元部分的von Mises等效应力
+ALLSEL,ALL
+/SHOW,JPEG
+/GFILE,pic_resolution,
+PLNSOL,S,EQV
+/SHOW,CLOSE
