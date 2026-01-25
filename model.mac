@@ -1,4 +1,4 @@
-!This code use NIAH method to derive the effective coefficient of Young's moduls, thermal expansion coefficient(CTE) and the thermal conductivity coefficient(CTC), and the sensitivities croospondingly.
+!This code use NIAH method to derive the effective coefficient of Young's moduls, thermal expansion coefficient(CTE) and the thermal conductivity coefficient(CTC), and the sensitivities corrsepondingly.
 !It origins from 'A novel implementation algorithm of asymptotic homogenization for predicting the effective coefficient of thermal expansion of periodic composite materials'.
 !Acta Mech. Sin. (2017) 33(2):368–381 DOI 10.1007/s10409-016-0618-7
 !Coded by Jie in 2024
@@ -15,8 +15,10 @@
 
 !H1_C=0.5
 !H2_C=0.5
-/INPUT,'iter','mac','.'       !# Iteration number 
+/INPUT,'iter','mac','.'       !# Iteration number
+！定义运行次数 iter = 13
 /INPUT,'para_%iter%','mac','.'    !# Design varibles: densities
+！i定义结构参数 wa = 1.464289，wb = 0.000500
 
 L=10
 
@@ -36,6 +38,11 @@ L=10
 !amesh,1
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! ---------------------------
+! 几何建模
+! ---------------------------
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 !方框建模
 k,1,0,0,0
 k,2,L,0,0
@@ -63,7 +70,10 @@ AGLUE,1,3
 !Ablue=4*L*wa-4*wa*wa
 !Ared=sqrt(2)*L*wb-b*b/2-2*sqrt(2)*wa*wb
 !Asum=Ablue+Ared
-          
+
+! ---------------------------
+! 有限元建模
+! ---------------------------
 ET,1,PLANE182
 ESIZE,0.4,0,               
 !AL
@@ -143,19 +153,16 @@ FNODE2=NODE(0.4,L-0.6,0)
 *GET,NNODE,NODE,0,COUNT 
 *DIM,X1,ARRAY,3,NNODE*2
 *DIM,X2,ARRAY,3,NNODE*2
-
 *DIM,FX1,ARRAY,3,NNODE*2
 *DIM,FX2,ARRAY,3,NNODE*2
 
 *DIM,XB1,ARRAY,1,NNODE*2
 *DIM,XB2,ARRAY,1,NNODE*2
-
 *DIM,FB1,ARRAY,1,NNODE*2 
 *DIM,FB2,ARRAY,1,NNODE*2
 
 *DIM,TEMP1,ARRAY,2,NNODE
 *DIM,TEMP2,ARRAY,2,NNODE
-
 *DIM,FT1,ARRAY,2,NNODE*2 
 *DIM,FT2,ARRAY,2,NNODE*2
 
@@ -166,21 +173,17 @@ FNODE2=NODE(0.4,L-0.6,0)
 *DIM,CONDT,ARRAY,2,2
 
 !!Construct three (2d) nodal displacement fields
-!!Construct two (2d) nodal tempature fields 
-
 *DO,I,1,NNODE
 !strain field 1
 X1(1,2*(I-1)+1)=NX(I)
 X1(1,2*(I-1)+2)=0
-
 !strain field 2
-X1(2,2*(I-1)+1)=0 
-X1(2,2*(I-1)+2)=NY(I) 
-
+X1(2,2*(I-1)+1)=0
+X1(2,2*(I-1)+2)=NY(I)
 !strain field 3
 X1(3,2*(I-1)+1)=NY(I)/2 
 X1(3,2*(I-1)+2)=NX(I)/2
-
+!!Construct two (2d) nodal tempature fields
 !tempature field 1&2
 TEMP1(1,I)=NX(I)
 TEMP1(2,I)=NY(I)
@@ -272,7 +275,12 @@ LSCLEAR,ALL
 /PREP7 
 *SET,Y,4*L*L
 
+! ------------------------------------------------------
 !Set the periodic boundary conditions
+! ------------------------------------------------------
+
+
+
 nn1=node(L,L,0)
 nn2=node(L,-L,0)
 nn3=node(-L,L,0)
@@ -293,7 +301,6 @@ CM,x2,NODE
 cmsel,s,x1,node
 cmsel,a,x2,node
 CPCYC,ALL,1E-007,0,0,2*L,0,0
-
 
 nsel,s,loc,x,-L
 cmsel,u,CORNER
@@ -593,7 +600,7 @@ CONDT(I,J)=CONDT(I,J)/Y
 *ENDDO
 *ENDDO
 
-!TENE	 	Thermal heat dissipation or "stiffness" energy (applies to all elements where meaningful). Same as SENE.
+!TENE Thermal heat dissipation or "stiffness" energy (applies to all elements where meaningful). Same as SENE.
 /SOLU
 acel,,9.8
 D,FNODE1,ALL
@@ -640,3 +647,4 @@ etem13=MASS/Y
 !*GET,a3,AREA,3,AREA
 
 !test=a1+a2+a3
+
