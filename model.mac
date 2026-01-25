@@ -1,11 +1,16 @@
-/UIS,MSGPOP,3                 !# Avoid pumping of warnings    
+!This code use NIAH method to derive the effective coefficient of Young's moduls, thermal expansion coefficient(CTE) and the thermal conductivity coefficient(CTC), and the sensitivities croospondingly.
+!It origins from 'A novel implementation algorithm of asymptotic homogenization for predicting the effective coefficient of thermal expansion of periodic composite materials'.
+!Acta Mech. Sin. (2017) 33(2):368â€“381 DOI 10.1007/s10409-016-0618-7
+!Coded by Jie in 2024
+
+/UIS,MSGPOP,3                 !# Avoid pumping of warnings
 /CMAP,'blue','cmap','c:\cmap\' 
 /PLOPTS,MINM,0  
-/format,,f,20,10                  !#¾«¶È¿ØÖÆ,±£Ö¤¸Õ¶È¾ØÕó¶ÁÈ¡µÄ¼ÆËã¾«¶È
+/format,,f,20,10                  !#ç²¾åº¦æ§åˆ¶,ä¿è¯åˆšåº¦çŸ©é˜µè¯»å–çš„è®¡ç®—ç²¾åº¦
 
 /PREP7
-!!½¨Ä£
-!subs(±í´ïÊ½,x,1)
+!!å»ºæ¨¡
+!subs(è¡¨è¾¾å¼,x,1)
 !simplify()  expand()
 
 !H1_C=0.5
@@ -31,7 +36,7 @@ L=10
 !amesh,1
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!·½¿ò½¨Ä£
+!æ–¹æ¡†å»ºæ¨¡
 k,1,0,0,0
 k,2,L,0,0
 k,3,L,L,0
@@ -46,7 +51,7 @@ A,5,6,7,8
 
 ASBA,1,2
 
-!Ğ±¸Ë½¨Ä£
+!æ–œæ†å»ºæ¨¡
 k,9,L-wa-wb*sqrt(2)/2,wa,0
 k,10,L-wa,wa+wb*sqrt(2)/2,0
 k,11,wa+wb*sqrt(2)/2,L-wa,0
@@ -84,14 +89,14 @@ ESIZE,0.2
 MAT,2                                            
 amesh,2
 *ENDIF
-!·½¿òµÄarea
+!æ–¹æ¡†çš„area
 
 *IF,wb,GT,0.1,THEN
 ESIZE,0.2
 MAT,1
 amesh,1
 *ENDIF
-!Ğ±¸ËµÄ
+!æ–œæ†çš„
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 !ESIZE,0.4
@@ -134,7 +139,7 @@ FNODE2=NODE(0.4,L-0.6,0)
 !1-1600 RHO1,1601-3200 ROH2
 !!Parameter definition
 !NumDesVar=ELMIQR(0,13)
-!ÌáÈ¡µ¥ÔªÊıÄ¿
+!æå–å•å…ƒæ•°ç›®
 *GET,NNODE,NODE,0,COUNT 
 *DIM,X1,ARRAY,3,NNODE*2
 *DIM,X2,ARRAY,3,NNODE*2
@@ -301,7 +306,7 @@ cmsel,a,y2,node
 CPCYC,ALL,1E-007,0,2*L,0,0,0
 allsel,all
 
-!¼ÆËãµÈĞ§
+!è®¡ç®—ç­‰æ•ˆ
 *DO,II,1,3
 
 *IF,II,EQ,1,THEN 
@@ -493,21 +498,21 @@ D,I,UY,Xbar(III,2*(I-1)+2)
 /SOLU
 SOLVE 
 /post1                            				
-ETABLE,sen,sene  !µ¥ÔªÓ¦±äÄÜ
+ETABLE,sen,sene  !å•å…ƒåº”å˜èƒ½
 *VGET,sn(1,III),elem, ,etab,sen
 SSUM
 *GET,EHH,SSUM,,ITEM,sen
 etable,erase
 EHV(III)=EHH*2/Y
-!Ó¦±äÄÜ¼ÆËã¹«Ê½ÖĞÓĞ0.5¹ÊĞèÒª³Ë2
+!åº”å˜èƒ½è®¡ç®—å…¬å¼ä¸­æœ‰0.5æ•…éœ€è¦ä¹˜2
 /PREP7
 LSCLEAR,ALL
 *ENDDO
-!ĞÎ³ÉÍêÕûµÄEH_Vector
+!å½¢æˆå®Œæ•´çš„EH_Vector
 EHV(4)=(EHV(4)-EHV(1)-EHV(2))/2
 EHV(5)=(EHV(5)-EHV(2)-EHV(3))/2
 EHV(6)=(EHV(6)-EHV(1)-EHV(3))/2
-!×ª»»Îª¾ØÕóĞÎÊ½
+!è½¬æ¢ä¸ºçŸ©é˜µå½¢å¼
 EH(1,1)=EHV(1)
 EH(2,2)=EHV(2)
 EH(3,3)=EHV(3)
@@ -534,12 +539,12 @@ EH(3,1)=EHV(6)
 *VOPER,sntem(1),sntem(1),sub,sn(1,3)
 *VOPER,sn(1,6),sntem(1),mult,0.5
 
-!¼ÆËãbetaµÄµÈĞ§
+!è®¡ç®—betaçš„ç­‰æ•ˆ
 *DIM,Xbarb,ARRAY,4,NNODE*2
 *DIM,snb,ARRAY,NumDesVar,4
-!³õÊ¼Ó¦±äÄÜ
+!åˆå§‹åº”å˜èƒ½
 *DIM,snb2,ARRAY,NumDesVar,3
-!»¥ÄÜÓ¦±äÄÜ
+!äº’èƒ½åº”å˜èƒ½
 *DIM,BETAAA,ARRAY,4,1
 *DIM,BETABB,ARRAY,3,1
 
@@ -561,24 +566,24 @@ D,I,UY,Xbarb(III,2*(I-1)+2)
 /SOLU
 SOLVE 
 /post1                            				
-ETABLE,sen,sene  !µ¥ÔªÓ¦±äÄÜ
+ETABLE,sen,sene  !å•å…ƒåº”å˜èƒ½
 *VGET,snb(1,III),elem, ,etab,sen
 SSUM
 *GET,EHH,SSUM,,ITEM,sen
 etable,erase
 BETAAA(III)=EHH*2/Y
-!Ó¦±äÄÜ¼ÆËã¹«Ê½
+!åº”å˜èƒ½è®¡ç®—å…¬å¼
 /PREP7
 LSCLEAR,ALL
 *ENDDO
-!betaµÄµÈĞ§Öµ
+!betaçš„ç­‰æ•ˆå€¼
 BETA(1)=(BETAAA(2)-EHV(1)-BETAAA(1))/2
 BETA(2)=(BETAAA(3)-EHV(2)-BETAAA(1))/2
 BETA(3)=(BETAAA(4)-EHV(3)-BETAAA(1))/2
 
 *MOPER,ALPHA,EH0,MULT,BETA
 
-!¼ÆËãµ¼ÈÈÏµÊı
+!è®¡ç®—å¯¼çƒ­ç³»æ•°
 *DO,I,1,2
 *DO,J,1,2
 *DO,K,1,NNODE
@@ -596,9 +601,9 @@ D,FNODE2,ALL
 allsel,all
 solve
 /post1
-fsum !½á¹¹Ö§×ù·´Á¦ÁĞ±í
-*get,fanli,fsum,0,item,fy !»ñÈ¡½á¹¹ÊúÏòÖ§×ù·´Á¦×ÜºÍ
-MASS=fanli*(-1)/9.8 !½á¹¹ÖÊÁ¿
+fsum !ç»“æ„æ”¯åº§ååŠ›åˆ—è¡¨
+*get,fanli,fsum,0,item,fy !è·å–ç»“æ„ç«–å‘æ”¯åº§ååŠ›æ€»å’Œ
+MASS=fanli*(-1)/9.8 !ç»“æ„è´¨é‡
 /PREP7
 LSCLEAR,ALL
 
@@ -620,7 +625,7 @@ etem12=CONDT(2,2)
 etem13=MASS/Y
 
 
-!Êä³öÓÅ»¯ÏìÓ¦
+!è¾“å‡ºä¼˜åŒ–å“åº”
 *cfopen,'RESPONSE_i%iter%',txt
 *VLEN,1 
 *VWRITE,etem1,etem2,etem3,etem4,etem5,etem6,etem7,etem8,etem9,etem10,etem11,etem12,etem13
@@ -628,9 +633,10 @@ etem13=MASS/Y
 *CFCLOS
 
 !ll^2 - 2*ll*w + 2*w^2 - (h1*ll*w)/2 - (h2*ll*w)/2
-!!¸ËµÄÃæ»ı 2*ll*w - 2*w^2 + (h1*ll*w)/2 + (h2*ll*w)/2
+!!æ†çš„é¢ç§¯ 2*ll*w - 2*w^2 + (h1*ll*w)/2 + (h2*ll*w)/2
 
 !*GET,a1,AREA,1,AREA
 !*GET,a2,AREA,2,AREA
 !*GET,a3,AREA,3,AREA
+
 !test=a1+a2+a3
